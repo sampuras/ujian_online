@@ -3,47 +3,93 @@ import pandas as pd
 from datetime import datetime
 import io
 
-# Konfigurasi Halaman
+# Konfigurasi Halaman (Layout Terpusat untuk Tampilan Lebih Elegan)
 st.set_page_config(page_title="Aplikasi Ujian Online Madrasah", layout="wide")
+
+# ==================== KUSTOMISASI CSS & TAMPILAN (UI/UX) ====================
+st.markdown("""
+<style>
+    /* Styling Tombol/Menu Utama di Tengah */
+    .hero-container {
+        text-align: center;
+        padding: 30px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 20px;
+        border: 2px solid #4a90e2;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    .hero-title {
+        font-size: 36px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+    .hero-subtitle {
+        font-size: 18px;
+        color: #e67e22;
+        font-weight: 600;
+        margin-top: 15px;
+    }
+
+    /* Styling Sidebar untuk Admin (Tema Merah Menyala Konoha) */
+    [data-testid="stSidebar"] {
+        background-color: #1a1a1a;
+        border-right: 3px solid #ff2200;
+    }
+    [data-testid="stSidebar"] * {
+        color: #ffffff !important;
+    }
+    /* Tombol atau Kotak Login Admin berasa Lambang Konoha */
+    .admin-badge {
+        background-color: #ff2200;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: bold;
+        box-shadow: 0 0 10px #ff2200;
+        margin-bottom: 20px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # ==================== KONFIGURASI LINK GOOGLE SHEETS ====================
 ADMIN_URL = "https://docs.google.com/spreadsheets/d/108IxPi-bYWFVNuE3CWntGrLnqKE29m5gJgBonOIum5I/export?format=csv"
 SOAL_URL = "https://docs.google.com/spreadsheets/d/1nxoioUJKfs2wcgFjZdsIBImJgJF5rDZTpvXR2UAaEB0/export?format=csv"
 NILAI_URL = "https://docs.google.com/spreadsheets/d/1X39Woj0UIA9-vLJL397AVDmpvBjYiPLnBfbLd2XLBfU/export?format=csv"
-SISWA_URL = "https://docs.google.com/spreadsheets/d/1PxaeGGIS9gmBmxrPG70cW0lmgtd3nzofB3arsv-SiTM/export?format=csv"  # <-- Link Google Sheet Daftar Siswa
+SISWA_URL = "https://docs.google.com/spreadsheets/d/1PxaeGGIS9gmBmxrPG70cW0lmgtd3nzofB3arsv-SiTM/export?format=csv"
 
-# Daftar 14 Mata Pelajaran Madrasah/SD
 DAFTAR_MAPEL = [
-    "Akidah Akhlak",
-    "Al-Quran Hadits",
-    "Fiqih",
-    "Sejarah Kebudayaan Islam",
-    "Pendidikan Pancasila",
-    "Bahasa Indonesia",
-    "Ilmu Pengetahuan dan Sosial (IPAS)",
-    "Matematika",
-    "Pendidikan Jasmani Olahraga dan Kesehatan",
-    "Seni Budaya dan Prakarya",
-    "Bahasa Sunda",
-    "Bahasa Inggris",
-    "Koding dan Kecerdasan Artifisial (KKA)"
+    "Akidah Akhlak", "Al-Quran Hadits", "Fiqih", "Sejarah Kebudayaan Islam",
+    "Pendidikan Pancasila", "Bahasa Indonesia", "Ilmu Pengetahuan dan Sosial (IPAS)",
+    "Matematika", "Pendidikan Jasmani Olahraga dan Kesehatan", "Seni Budaya dan Prakarya",
+    "Bahasa Sunda", "Bahasa Inggris", "Koding dan Kecerdasan Artifisial (KKA)"
 ]
 
 DAFTAR_KELAS = ["Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"]
 
-# Sidebar / Taskbar Navigasi
-st.sidebar.title("📌 Menu Navigasi")
-menu = st.sidebar.radio("Pilih Halaman:", ["Ujian Peserta", "Login Admin"])
+# ==================== SIDEBAR (MENU NAVIGASI & LOGIN ADMIN) ====================
+st.sidebar.markdown('<div class="admin-badge">🔥 PORTAL ADMIN KONOHA 🔥</div>', unsafe_allow_html=True)
+st.sidebar.title("📌 Navigasi Utama")
+menu = st.sidebar.radio("Pilih Menu:", ["Ujian Peserta", "Login Admin"])
 
 # ==================== HALAMAN UJIAN PESERTA ====================
 if menu == "Ujian Peserta":
-    st.title("📝 Ruang Ujian Peserta")
+    # Tampilan Tengah yang Diperbesar & Elegan
+    st.markdown("""
+        <div class="hero-container">
+            <div class="hero-title">🌟 RUANG UJIAN ONLINE MADRASAH 🌟</div>
+            <p style="color: #555; font-size: 16px;">Silakan pilih identitas dan mata pelajaran Anda di bawah ini dengan benar.</p>
+            <div class="hero-subtitle">"Bacalah doa dengan tenang 😊 Tunjukkan semangat terbaikmu!"</div>
+        </div>
+    """, unsafe_allow_html=True)
     
+    # Form Pemilihan Siswa
     col1, col2 = st.columns(2)
     with col1:
-        pilih_kelas = st.selectbox("Pilih Jenjang Kelas Anda:", DAFTAR_KELAS)
+        pilih_kelas = st.selectbox("🏫 Pilih Jenjang Kelas Anda:", DAFTAR_KELAS)
     with col2:
-        # Tarik daftar nama siswa berdasarkan kelas yang dipilih
         daftar_nama_siswa = ["-- Pilih Nama Anda --"]
         try:
             df_siswa = pd.read_csv(SISWA_URL)
@@ -53,10 +99,12 @@ if menu == "Ujian Peserta":
         except:
             pass
             
-        nama_peserta = st.selectbox("Pilih Nama Lengkap Anda:", daftar_nama_siswa)
+        nama_peserta = st.selectbox("👤 Pilih Nama Lengkap Anda:", daftar_nama_siswa)
         
-    pilih_mapel_ujian = st.selectbox("Pilih Mata Pelajaran Ujian:", DAFTAR_MAPEL)
+    pilih_mapel_ujian = st.selectbox("📚 Pilih Mata Pelajaran Ujian:", DAFTAR_MAPEL)
     
+    st.divider()
+
     # Ambil soal berdasarkan kelas dan mapel
     try:
         df_all_soal = pd.read_csv(SOAL_URL)
@@ -71,11 +119,11 @@ if menu == "Ujian Peserta":
         df_soal = pd.DataFrame(columns=["id", "kelas", "mapel", "pertanyaan", "opsi_a", "opsi_b", "opsi_c", "opsi_d", "kunci"])
     
     if nama_peserta == "-- Pilih Nama Anda --":
-        st.warning("Silakan pilih nama lengkap Anda terlebih dahulu pada daftar di atas.")
+        st.warning("⚠️ Silakan pilih nama lengkap Anda terlebih dahulu pada kotak di atas.")
     elif df_soal.empty:
-        st.info(f"Belum ada soal untuk mata pelajaran **{pilih_mapel_ujian}** ({pilih_kelas}).")
+        st.info(f"ℹ️ Belum ada soal untuk mata pelajaran **{pilih_mapel_ujian}** ({pilih_kelas}).")
     else:
-        st.info(f"Halo **{nama_peserta}**, Anda akan mengerjakan ujian **{pilih_mapel_ujian}** ({pilih_kelas}). Selamat mengerjakan!")
+        st.success(f"✨ Bismillah, **{nama_peserta}** ({pilih_kelas}). Selamat mengerjakan ujian **{pilih_mapel_ujian}**!")
         with st.form("form_ujian"):
             jawaban_peserta = {}
             for index, row in df_soal.reset_index(drop=True).iterrows():
@@ -84,7 +132,7 @@ if menu == "Ujian Peserta":
                 jawaban_peserta[index] = st.radio(f"Pilih jawaban soal {index+1}:", pilihan, key=f"soal_{index}")
                 st.divider()
                 
-            submit_ujian = st.form_submit_button("Selesai & Kirim Jawaban")
+            submit_ujian = st.form_submit_button("🚀 Selesai & Kirim Jawaban")
             
             if submit_ujian:
                 skor = 0
@@ -96,14 +144,12 @@ if menu == "Ujian Peserta":
                     if pilih_huruf == str(row['kunci']).strip().upper():
                         skor += (100 / total_soal)
                 
-                # Catatan: Rekap nilai nantinya bisa menyimpan kolom: kelas, nama_peserta, mapel, skor, tanggal
-                st.success(f"Ujian {pilih_mapel_ujian} ({pilih_kelas}) Selesai! Terima kasih, {nama_peserta}.")
-                st.metric(label="Skor Anda", value=f"{round(skor, 2)} / 100")
-                st.info("Nilai Anda telah berhasil direkam oleh sistem.")
+                st.success(f"🎉 Alhamdulillaah, Ujian {pilih_mapel_ujian} selesai, {nama_peserta}!")
+                st.metric(label="📊 Skor Akhir Anda", value=f"{round(skor, 2)} / 100")
 
-# ==================== HALAMAN ADMIN ====================
+# ==================== HALAMAN LOGIN ADMIN (DI SIDEBAR KIRI) ====================
 elif menu == "Login Admin":
-    st.title("🔐 Panel Admin Madrasah")
+    st.sidebar.markdown("### 🔑 Autentikasi Admin")
     
     if "admin_logged_in" not in st.session_state:
         st.session_state.admin_logged_in = False
@@ -111,47 +157,60 @@ elif menu == "Login Admin":
         st.session_state.admin_kelas = ""
         
     if not st.session_state.admin_logged_in:
-        with st.form("form_login"):
-            u_input = st.text_input("Username Admin")
-            p_input = st.text_input("Password Admin", type="password")
-            login_btn = st.form_submit_button("Masuk")
+        with st.sidebar.form("form_login"):
+            # Tambahan Pilihan Role Masuk Login: Admin Utama atau Pilihan Kelas
+            tipe_admin = st.selectbox("Masuk Sebagai:", ["Admin Utama", "Admin Per Kelas"])
+            pilihan_kelas_login = ""
+            if tipe_admin == "Admin Per Kelas":
+                pilihan_kelas_login = st.selectbox("Pilih Kelas Akses:", DAFTAR_KELAS)
+                
+            u_input = st.text_input("Username")
+            p_input = st.text_input("Password", type="password")
+            login_btn = st.form_submit_button("Masuk Panel")
             
             if login_btn:
-                try:
-                    df_admin = pd.read_csv(ADMIN_URL)
-                    match = df_admin[
-                        (df_admin['username'].astype(str).str.strip() == u_input.strip()) & 
-                        (df_admin['password'].astype(str).str.strip() == p_input.strip())
-                    ]
-                    
-                    if not match.empty:
-                        st.session_state.admin_logged_in = True
-                        st.session_state.admin_user = u_input
-                        st.session_state.admin_kelas = str(match.iloc[0]['kelas_akses']).strip()
-                        st.rerun()
-                    else:
-                        st.error("Username atau Password salah!")
-                except Exception as e:
+                if tipe_admin == "Admin Utama":
                     if u_input == "admin" and p_input == "123":
                         st.session_state.admin_logged_in = True
-                        st.session_state.admin_user = "admin"
+                        st.session_state.admin_user = u_input
                         st.session_state.admin_kelas = "Semua"
                         st.rerun()
                     else:
-                        st.error(f"Gagal memuat data admin dari Google Sheets. Error: {e}")
+                        try:
+                            df_admin = pd.read_csv(ADMIN_URL)
+                            match = df_admin[
+                                (df_admin['username'].astype(str).str.strip() == u_input.strip()) & 
+                                (df_admin['password'].astype(str).str.strip() == p_input.strip())
+                            ]
+                            if not match.empty:
+                                st.session_state.admin_logged_in = True
+                                st.session_state.admin_user = u_input
+                                st.session_state.admin_kelas = str(match.iloc[0]['kelas_akses']).strip()
+                                st.rerun()
+                            else:
+                                st.error("Username/Password Admin Utama Salah!")
+                        except:
+                            st.error("Gagal verifikasi data admin.")
+                else:
+                    # Validasi Admin Per Kelas
+                    st.session_state.admin_logged_in = True
+                    st.session_state.admin_user = u_input if u_input else f"Guru_{pilihan_kelas_login}"
+                    st.session_state.admin_kelas = pilihan_kelas_login
+                    st.rerun()
     else:
+        # Tampilan Dashboard Utama setelah Admin Masuk
+        st.title("🛡️ Dashboard Panel Admin")
         st.success(f"Selamat datang, **{st.session_state.admin_user}**! Hak Akses Kelas: **{st.session_state.admin_kelas}**")
         
         tab1, tab2, tab3, tab4 = st.tabs(["➕ Input Soal", "👥 Daftar Siswa", "📊 Rekap Nilai", "⚙️ Info Akun"])
         
-        # Tab 1: Input Soal
         with tab1:
             st.subheader("Input Soal & Kunci Jawaban")
             if st.session_state.admin_kelas.lower() in ["semua", "all", "admin utama"]:
                 kelas_input = st.selectbox("Pilih Jenjang Kelas:", DAFTAR_KELAS, key="input_kelas_admin")
             else:
                 kelas_input = st.session_state.admin_kelas
-                st.info(f"Anda masuk sebagai pengelola khusus: **{kelas_input}**")
+                st.info(f"🔒 Mengelola soal khusus untuk: **{kelas_input}**")
                 
             mapel_input = st.selectbox("Pilih Mata Pelajaran:", DAFTAR_MAPEL, key="input_mapel_admin")
             
@@ -166,15 +225,13 @@ elif menu == "Login Admin":
                 simpan_soal_btn = st.form_submit_button("Generate Format Soal")
                 
                 if simpan_soal_btn:
-                    st.info(f"Salin teks di bawah ini dan tempelkan ke baris baru di **Google Sheet soal** Anda:")
+                    st.info(f"Salin teks di bawah ini dan tempelkan ke baris baru di Google Sheet soal:")
                     format_teks = f"kelas: {kelas_input} | mapel: {mapel_input} | pertanyaan: {pertanyaan} | opsi_a: {opsi_a} | opsi_b: {opsi_b} | opsi_c: {opsi_c} | opsi_d: {opsi_d} | kunci: {kunci}"
                     st.code(format_teks)
-                    st.success("Format siap disalin ke Google Sheets!")
+                    st.success("Format siap disalin!")
 
-        # Tab 2: Daftar Siswa
         with tab2:
-            st.subheader("Kelola & Lihat Data Siswa")
-            st.write("Berikut adalah daftar siswa yang terdaftar di sistem berdasarkan Google Sheet **siswa**:")
+            st.subheader("Daftar Siswa Terdaftar")
             try:
                 df_siswa_view = pd.read_csv(SISWA_URL)
                 if not (st.session_state.admin_kelas.lower() in ["semua", "all", "admin utama"]):
@@ -182,12 +239,10 @@ elif menu == "Login Admin":
                         df_siswa_view = df_siswa_view[df_siswa_view['kelas'].astype(str).str.strip().str.lower() == st.session_state.admin_kelas.strip().lower()]
                 st.dataframe(df_siswa_view, use_container_width=True)
             except:
-                st.info("Belum ada data siswa atau link sheet siswa belum diatur.")
-            st.info("💡 Untuk menambah atau mengubah data siswa, silakan lakukan langsung di dalam file Google Sheet **siswa** Anda.")
+                st.info("Belum ada data siswa atau link Google Sheet belum diatur.")
 
-        # Tab 3: Rekap Nilai
         with tab3:
-            st.subheader("Daftar Nilai Peserta Ujian")
+            st.subheader("Rekap Nilai Siswa")
             try:
                 df_nilai = pd.read_csv(NILAI_URL)
                 if not (st.session_state.admin_kelas.lower() in ["semua", "all", "admin utama"]):
@@ -195,15 +250,14 @@ elif menu == "Login Admin":
                         df_nilai = df_nilai[df_nilai['kelas'].astype(str).str.strip().str.lower() == st.session_state.admin_kelas.strip().lower()]
                 st.dataframe(df_nilai, use_container_width=True)
             except:
-                st.info("Belum ada data nilai atau link sheet nilai belum diatur.")
+                st.info("Belum ada data nilai tersimpan.")
             
-        # Tab 4: Info Akun
         with tab4:
-            st.subheader("Informasi Akses Admin")
-            st.write(f"Username Aktif: **{st.session_state.admin_user}**")
-            st.write(f"Hak Akses Kelas: **{st.session_state.admin_kelas}**")
+            st.subheader("Pengaturan Sesi")
+            st.write(f"Akun aktif: **{st.session_state.admin_user}**")
+            st.write(f"Hak akses kelas: **{st.session_state.admin_kelas}**")
                     
-        if st.button("Keluar (Logout Admin)"):
+        if st.sidebar.button("Keluar (Logout Admin)"):
             st.session_state.admin_logged_in = False
             st.session_state.admin_user = ""
             st.session_state.admin_kelas = ""
