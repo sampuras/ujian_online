@@ -70,8 +70,8 @@ DAFTAR_MAPEL = [
 DAFTAR_KELAS = ["Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"]
 
 # ==================== SIDEBAR (MENU NAVIGASI & LOGIN ADMIN) ====================
-st.sidebar.markdown('<div class="admin-badge">🔥 PORTAL ADMIN KONOHA 🔥</div>', unsafe_allow_html=True)
-st.sidebar.title("📌 Navigasi Utama")
+st.sidebar.markdown('<div class="admin-badge">🔥 SAMPURASUN 🔥</div>', unsafe_allow_html=True)
+st.sidebar.title("MENU UTAMA")
 menu = st.sidebar.radio("Pilih Menu:", ["Ujian Peserta", "Login Admin"])
 
 # ==================== HALAMAN UJIAN PESERTA ====================
