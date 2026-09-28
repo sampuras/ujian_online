@@ -3,8 +3,11 @@ import pandas as pd
 from datetime import datetime
 import io
 
-# Konfigurasi Halaman (Layout Terpusat untuk Tampilan Lebih Elegan)
-st.set_page_config(page_title="Aplikasi Ujian Online Madrasah", layout="wide")
+# Konfigurasi Halaman (sidebar otomatis disembunyikan/collapsed saat awal buka)
+fn_config = st.set_page_config(
+	page_title="Aplikasi Ujian Online Madrasah", 
+	layout="wide",
+	initial_sidebar_state="collapsed"
 
 # ==================== KUSTOMISASI CSS & TAMPILAN (UI/UX MODERN) ====================
 st.markdown("""
@@ -73,7 +76,7 @@ DAFTAR_MAPEL = [
 DAFTAR_KELAS = ["Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"]
 
 # ==================== SIDEBAR (NAVIGASI & LOGIN ADMIN MODERN) ====================
-st.sidebar.markdown('<div class="admin-badge">🛡️ PORTAL ADMIN MANAJEMEN</div>', safe_allow_html=True)
+st.sidebar.markdown('<div class="admin-badge">🛡️ PORTAL ADMIN MANAJEMEN</div>', unsafe_allow_html=True)
 st.sidebar.title("📌 Menu Navigasi")
 menu = st.sidebar.radio("Pilih Menu:", ["Ujian Peserta", "Login Admin"])
 
