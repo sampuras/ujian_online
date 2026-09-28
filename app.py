@@ -5,7 +5,7 @@ import io
 
 # Konfigurasi Halaman (Sidebar otomatis disembunyikan/collapsed saat awal buka)
 fn_config = st.set_page_config(
-    page_title="Aplikasi Ujian Online MIS ASHSHOLAHIYAH", 
+    page_title="Aplikasi Ujian MIS ASHSHOLAHIYAH", 
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -62,10 +62,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==================== KONFIGURASI LINK GOOGLE SHEETS ====================
-SOAL_URL = "MASUKKAN_LINK_SHEET_SOAL_DI_SINI"
-ADMIN_URL = "MASUKKAN_LINK_SHEET_ADMIN_DI_SINI"
-NILAI_URL = "MASUKKAN_LINK_SHEET_NILAI_DI_SINI"
-SISWA_URL = "MASUKKAN_LINK_SHEET_SISWA_DI_SINI"
+ADMIN_URL = "https://docs.google.com/spreadsheets/d/108IxPi-bYWFVNuE3CWntGrLnqKE29m5gJgBonOIum5I/export?format=csv"
+SOAL_URL = "https://docs.google.com/spreadsheets/d/1nxoioUJKfs2wcgFjZdsIBImJgJF5rDZTpvXR2UAaEB0/export?format=csv"
+NILAI_URL = "https://docs.google.com/spreadsheets/d/1X39Woj0UIA9-vLJL397AVDmpvBjYiPLnBfbLd2XLBfU/export?format=csv"
+SISWA_URL = "https://docs.google.com/spreadsheets/d/1PxaeGGIS9gmBmxrPG70cW0lmgtd3nzofB3arsv-SiTM/export?format=csv"
 
 DAFTAR_MAPEL = [
     "Akidah Akhlak", "Al-Quran Hadits", "Fiqih", "Sejarah Kebudayaan Islam",
@@ -86,7 +86,7 @@ if menu == "Ujian Peserta":
     # Tampilan Tengah yang Diperbesar & Elegan
     st.markdown("""
         <div class="hero-container">
-            <div class="hero-title">🌟 RUANG UJIAN ONLINE MADRASAH 🌟</div>
+            <div class="hero-title">🌟 RUANG UJIAN MIS ASHSHOLAHIYAH 🌟</div>
             <p style="color: #64748b; font-size: 15px;">Silakan pilih identitas dan mata pelajaran Anda di bawah ini dengan teliti.</p>
             <div class="hero-subtitle">"Bacalah doa dengan tenang 😊 Tunjukkan semangat terbaikmu!"</div>
         </div>
