@@ -5,7 +5,7 @@ import io
 
 # Konfigurasi Halaman (Sidebar otomatis disembunyikan/collapsed saat awal buka)
 fn_config = st.set_page_config(
-    page_title="Aplikasi Ujian Online Madrasah", 
+    page_title="Aplikasi Ujian Online MIS ASHSHOLAHIYAH", 
     layout="wide",
     initial_sidebar_state="collapsed"
 )
