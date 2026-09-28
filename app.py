@@ -6,59 +6,62 @@ import io
 # Konfigurasi Halaman (Layout Terpusat untuk Tampilan Lebih Elegan)
 st.set_page_config(page_title="Aplikasi Ujian Online Madrasah", layout="wide")
 
-# ==================== KUSTOMISASI CSS & TAMPILAN (UI/UX) ====================
+# ==================== KUSTOMISASI CSS & TAMPILAN (UI/UX MODERN) ====================
 st.markdown("""
 <style>
     /* Styling Tombol/Menu Utama di Tengah */
     .hero-container {
         text-align: center;
-        padding: 30px;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        border-radius: 20px;
-        border: 2px solid #4a90e2;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        padding: 35px;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 16px;
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         margin-bottom: 30px;
     }
     .hero-title {
-        font-size: 36px;
-        font-weight: bold;
-        color: #2c3e50;
-        margin-bottom: 10px;
+        font-size: 32px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 8px;
     }
     .hero-subtitle {
-        font-size: 18px;
-        color: #e67e22;
+        font-size: 16px;
+        color: #0284c7;
         font-weight: 600;
-        margin-top: 15px;
+        margin-top: 12px;
     }
 
-    /* Styling Sidebar untuk Admin (Tema Merah Menyala Konoha) */
+    /* Sidebar Modern & Profesional (Dark Clean Theme) */
     [data-testid="stSidebar"] {
-        background-color: #1a1a1a;
-        border-right: 3px solid #ff2200;
+        background-color: #0f172a;
+        border-right: 1px solid #334155;
     }
     [data-testid="stSidebar"] * {
-        color: #ffffff !important;
+        color: #f8fafc !important;
     }
-    /* Tombol atau Kotak Login Admin berasa Lambang Konoha */
+    
+    /* Badge Admin Profesional */
     .admin-badge {
-        background-color: #ff2200;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
         color: white;
-        padding: 8px 15px;
-        border-radius: 8px;
+        padding: 10px 14px;
+        border-radius: 10px;
         text-align: center;
-        font-weight: bold;
-        box-shadow: 0 0 10px #ff2200;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         margin-bottom: 20px;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ==================== KONFIGURASI LINK GOOGLE SHEETS ====================
-ADMIN_URL = "https://docs.google.com/spreadsheets/d/108IxPi-bYWFVNuE3CWntGrLnqKE29m5gJgBonOIum5I/export?format=csv"
-SOAL_URL = "https://docs.google.com/spreadsheets/d/1nxoioUJKfs2wcgFjZdsIBImJgJF5rDZTpvXR2UAaEB0/export?format=csv"
-NILAI_URL = "https://docs.google.com/spreadsheets/d/1X39Woj0UIA9-vLJL397AVDmpvBjYiPLnBfbLd2XLBfU/export?format=csv"
-SISWA_URL = "https://docs.google.com/spreadsheets/d/1PxaeGGIS9gmBmxrPG70cW0lmgtd3nzofB3arsv-SiTM/export?format=csv"
+SOAL_URL = "MASUKKAN_LINK_SHEET_SOAL_DI_SINI"
+ADMIN_URL = "MASUKKAN_LINK_SHEET_ADMIN_DI_SINI"
+NILAI_URL = "MASUKKAN_LINK_SHEET_NILAI_DI_SINI"
+SISWA_URL = "MASUKKAN_LINK_SHEET_SISWA_DI_SINI"
 
 DAFTAR_MAPEL = [
     "Akidah Akhlak", "Al-Quran Hadits", "Fiqih", "Sejarah Kebudayaan Islam",
@@ -69,9 +72,9 @@ DAFTAR_MAPEL = [
 
 DAFTAR_KELAS = ["Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6"]
 
-# ==================== SIDEBAR (MENU NAVIGASI & LOGIN ADMIN) ====================
-st.sidebar.markdown('<div class="admin-badge">🔥 SAMPURASUN 🔥</div>', unsafe_allow_html=True)
-st.sidebar.title("MENU UTAMA")
+# ==================== SIDEBAR (NAVIGASI & LOGIN ADMIN MODERN) ====================
+st.sidebar.markdown('<div class="admin-badge">🛡️ PORTAL ADMIN MANAJEMEN</div>', unsafe_allow_html=True)
+st.sidebar.title("📌 Menu Navigasi")
 menu = st.sidebar.radio("Pilih Menu:", ["Ujian Peserta", "Login Admin"])
 
 # ==================== HALAMAN UJIAN PESERTA ====================
@@ -80,7 +83,7 @@ if menu == "Ujian Peserta":
     st.markdown("""
         <div class="hero-container">
             <div class="hero-title">🌟 RUANG UJIAN ONLINE MADRASAH 🌟</div>
-            <p style="color: #555; font-size: 16px;">Silakan pilih identitas dan mata pelajaran Anda di bawah ini dengan benar.</p>
+            <p style="color: #64748b; font-size: 15px;">Silakan pilih identitas dan mata pelajaran Anda di bawah ini dengan teliti.</p>
             <div class="hero-subtitle">"Bacalah doa dengan tenang 😊 Tunjukkan semangat terbaikmu!"</div>
         </div>
     """, unsafe_allow_html=True)
@@ -149,7 +152,7 @@ if menu == "Ujian Peserta":
 
 # ==================== HALAMAN LOGIN ADMIN (DI SIDEBAR KIRI) ====================
 elif menu == "Login Admin":
-    st.sidebar.markdown("### 🔑 Autentikasi Admin")
+    st.sidebar.markdown("### 🔐 Autentikasi Sistem")
     
     if "admin_logged_in" not in st.session_state:
         st.session_state.admin_logged_in = False
@@ -158,7 +161,6 @@ elif menu == "Login Admin":
         
     if not st.session_state.admin_logged_in:
         with st.sidebar.form("form_login"):
-            # Tambahan Pilihan Role Masuk Login: Admin Utama atau Pilihan Kelas
             tipe_admin = st.selectbox("Masuk Sebagai:", ["Admin Utama", "Admin Per Kelas"])
             pilihan_kelas_login = ""
             if tipe_admin == "Admin Per Kelas":
@@ -192,14 +194,13 @@ elif menu == "Login Admin":
                         except:
                             st.error("Gagal verifikasi data admin.")
                 else:
-                    # Validasi Admin Per Kelas
                     st.session_state.admin_logged_in = True
                     st.session_state.admin_user = u_input if u_input else f"Guru_{pilihan_kelas_login}"
                     st.session_state.admin_kelas = pilihan_kelas_login
                     st.rerun()
     else:
         # Tampilan Dashboard Utama setelah Admin Masuk
-        st.title("🛡️ Dashboard Panel Admin")
+        st.title("📊 Dashboard Panel Admin")
         st.success(f"Selamat datang, **{st.session_state.admin_user}**! Hak Akses Kelas: **{st.session_state.admin_kelas}**")
         
         tab1, tab2, tab3, tab4 = st.tabs(["➕ Input Soal", "👥 Daftar Siswa", "📊 Rekap Nilai", "⚙️ Info Akun"])
