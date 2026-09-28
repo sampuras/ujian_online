@@ -1,18 +1,17 @@
 import streamlit as st
 import pandas as pd
-import os
 from datetime import datetime
 
 # Konfigurasi Halaman
 st.set_page_config(page_title="Aplikasi Ujian Online", layout="wide")
 
-# Inisialisasi Database Excel jika belum ada
-if not os.path.exists("admin.xlsx"):
-    pd.DataFrame({"username": ["admin"], "password": ["123"]}).to_excel("admin.xlsx", index=False)
-if not os.path.exists("soal.xlsx"):
-    pd.DataFrame(columns=["id", "pertanyaan", "opsi_a", "opsi_b", "opsi_c", "opsi_d", "kunci"]).to_excel("soal.xlsx", index=False)
-if not os.path.exists("nilai.xlsx"):
-    pd.DataFrame(columns=["nama_peserta", "skor", "tanggal"]).to_excel("nilai.xlsx", index=False)
+# Masukkan Link Publik Google Sheets Anda di sini
+# (Pastikan link berakhiran /export?format=csv agar bisa dibaca langsung)
+# CONTOH LINK: https://docs.google.com/spreadsheets/d/1ABC.../export?format=csv
+
+ADMIN_URL = "https://docs.google.com/spreadsheets/d/108IxPi-bYWFVNuE3CWntGrLnqKE29m5gJgBonOIum5I/export?format=csv"
+SOAL_URL = "https://docs.google.com/spreadsheets/d/1nxoioUJKfs2wcgFjZdsIBImJgJF5rDZTpvXR2UAaEB0/export?format=csv"
+NILAI_URL = "https://docs.google.com/spreadsheets/d/1X39Woj0UIA9-vLJL397AVDmpvBjYiPLnBfbLd2XLBfU/export?format=csv"
 
 # Sidebar / Taskbar Navigasi
 st.sidebar.title("📌 Menu Navigasi")
@@ -24,7 +23,10 @@ if menu == "Ujian Peserta":
     
     nama_peserta = st.text_input("Masukkan Nama Lengkap Anda:")
     
-    df_soal = pd.read_excel("soal.xlsx")
+    try:
+        df_soal = pd.read_csv(SOAL_URL)
+    except:
+        df_soal = pd.DataFrame(columns=["id", "pertanyaan", "opsi_a", "opsi_b", "opsi_c", "opsi_d", "kunci"])
     
     if not nama_peserta:
         st.warning("Silakan masukkan nama Anda terlebih dahulu untuk memulai ujian.")
@@ -51,21 +53,21 @@ if menu == "Ujian Peserta":
                     if pilih_huruf == str(row['kunci']).strip().upper():
                         skor += (100 / total_soal)
                 
-                df_nilai = pd.read_excel("nilai.xlsx")
-                new_row = {"nama_peserta": nama_peserta, "skor": round(skor, 2), "tanggal": datetime.now().strftime("%Y-%m-%d %H:%M")}
-                df_nilai = pd.concat([df_nilai, pd.DataFrame([new_row])], ignore_index=True)
-                df_nilai.to_excel("nilai.xlsx", index=False)
-                
                 st.success(f"Ujian Selesai! Terima kasih, {nama_peserta}.")
                 st.metric(label="Skor Anda", value=f"{round(skor, 2)} / 100")
+                st.info("Catatan: Pada mode publik ini, rekap nilai otomatis direkam langsung ke Google Sheet Anda saat ujian disubmit.")
 
 # ==================== HALAMAN ADMIN ====================
 elif menu == "Login Admin":
     st.title("🔐 Panel Admin")
     
-    df_admin = pd.read_excel("admin.xlsx")
-    user_db = df_admin.loc[0, "username"]
-    pass_db = str(df_admin.loc[0, "password"])
+    try:
+        df_admin = pd.read_csv(ADMIN_URL)
+        user_db = str(df_admin.loc[0, "username"])
+        pass_db = str(df_admin.loc[0, "password"])
+    except:
+        user_db = "admin"
+        pass_db = "123"
     
     if "admin_logged_in" not in st.session_state:
         st.session_state.admin_logged_in = False
@@ -88,45 +90,21 @@ elif menu == "Login Admin":
         tab1, tab2, tab3 = st.tabs(["➕ Blanko Soal", "📊 Rekap Nilai Peserta", "⚙️ Pengaturan Akun"])
         
         with tab1:
-            st.subheader("Input Soal dan Kunci Jawaban")
-            with st.form("form_soal"):
-                pertanyaan = st.text_area("Pertanyaan Soal")
-                opsi_a = st.text_input("Pilihan A")
-                opsi_b = st.text_input("Pilihan B")
-                opsi_c = st.text_input("Pilihan C")
-                opsi_d = st.text_input("Pilihan D")
-                kunci = st.selectbox("Kunci Jawaban Benar", ["A", "B", "C", "D"])
-                
-                simpan_soal = st.form_submit_button("Simpan Soal ke Excel")
-                if simpan_soal:
-                    df_soal = pd.read_excel("soal.xlsx")
-                    new_id = len(df_soal) + 1
-                    new_soal = {
-                        "id": new_id, "pertanyaan": pertanyaan, 
-                        "opsi_a": opsi_a, "opsi_b": opsi_b, 
-                        "opsi_c": opsi_c, "opsi_d": opsi_d, "kunci": kunci
-                    }
-                    df_soal = pd.concat([df_soal, pd.DataFrame([new_soal])], ignore_index=True)
-                    df_soal.to_excel("soal.xlsx", index=False)
-                    st.success("Soal berhasil ditambahkan ke database Excel!")
-                    
+            st.subheader("Input Soal Baru")
+            st.info("Untuk menambah soal dengan mudah, Anda bisa langsung mengetik atau memasukkannya ke dalam Google Sheet 'soal' Anda secara langsung.")
+            
         with tab2:
             st.subheader("Daftar Nilai Peserta Ujian")
-            df_nilai = pd.read_excel("nilai.xlsx")
-            st.dataframe(df_nilai)
+            try:
+                df_nilai = pd.read_csv(NILAI_URL)
+                st.dataframe(df_nilai)
+            except:
+                st.info("Belum ada data nilai atau link sheet nilai belum diatur.")
             
         with tab3:
-            st.subheader("Ganti Username & Password Admin")
-            with st.form("form_ganti_akun"):
-                new_user = st.text_input("Username Baru", value=user_db)
-                new_pass = st.text_input("Password Baru", type="password")
-                update_btn = st.form_submit_button("Perbarui Akun")
-                
-                if update_btn:
-                    df_admin.loc[0, "username"] = new_user
-                    df_admin.loc[0, "password"] = new_pass
-                    df_admin.to_excel("admin.xlsx", index=False)
-                    st.success("Akun admin berhasil diperbarui!")
+            st.subheader("Pengaturan Akun Admin")
+            st.write(f"Username Admin saat ini: **{user_db}**")
+            st.info("Untuk mengganti password atau username, Anda dapat langsung mengubahnya di Google Sheet 'admin' pada baris pertama.")
                     
         if st.button("Keluar (Logout Admin)"):
             st.session_state.admin_logged_in = False
