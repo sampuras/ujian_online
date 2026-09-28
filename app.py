@@ -7,10 +7,10 @@ import io
 st.set_page_config(page_title="Aplikasi Ujian Online Madrasah", layout="wide")
 
 # ==================== KONFIGURASI LINK GOOGLE SHEETS ====================
-SOAL_URL = "MASUKKAN_LINK_SHEET_SOAL_DI_SINI"
-ADMIN_URL = "MASUKKAN_LINK_SHEET_ADMIN_DI_SINI"
-NILAI_URL = "MASUKKAN_LINK_SHEET_NILAI_DI_SINI"
-SISWA_URL = "MASUKKAN_LINK_SHEET_SISWA_DI_SINI"  # <-- Link Google Sheet Daftar Siswa
+ADMIN_URL = "https://docs.google.com/spreadsheets/d/108IxPi-bYWFVNuE3CWntGrLnqKE29m5gJgBonOIum5I/export?format=csv"
+SOAL_URL = "https://docs.google.com/spreadsheets/d/1nxoioUJKfs2wcgFjZdsIBImJgJF5rDZTpvXR2UAaEB0/export?format=csv"
+NILAI_URL = "https://docs.google.com/spreadsheets/d/1X39Woj0UIA9-vLJL397AVDmpvBjYiPLnBfbLd2XLBfU/export?format=csv"
+SISWA_URL = "https://docs.google.com/spreadsheets/d/1PxaeGGIS9gmBmxrPG70cW0lmgtd3nzofB3arsv-SiTM/export?format=csv"  # <-- Link Google Sheet Daftar Siswa
 
 # Daftar 14 Mata Pelajaran Madrasah/SD
 DAFTAR_MAPEL = [
