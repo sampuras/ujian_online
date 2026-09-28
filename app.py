@@ -3,12 +3,12 @@ import pandas as pd
 from datetime import datetime
 import io
 
-# Konfigurasi Halaman (sidebar otomatis disembunyikan/collapsed saat awal buka)
+# Konfigurasi Halaman (Sidebar otomatis disembunyikan/collapsed saat awal buka)
 fn_config = st.set_page_config(
-	page_title="Aplikasi Ujian Online Madrasah", 
-	layout="wide",
-	initial_sidebar_state="collapsed""
-	)
+    page_title="Aplikasi Ujian Online Madrasah", 
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 # ==================== KUSTOMISASI CSS & TAMPILAN (UI/UX MODERN) ====================
 st.markdown("""
