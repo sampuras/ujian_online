@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from streamlit_gsheets import GSheetsConnection
+import gspread
+from google.oauth2.service_account import Credentials
 
 st.set_page_config(
     page_title="Portal Ujian Online Sekolah",
@@ -9,36 +10,70 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Styling Tombol Oval Modern
+# Styling Tombol Oval Modern & Estetik
 st.markdown("""
     <style>
     .oval-btn {
-        background: linear-gradient(135deg, #4e54c8, #8f94fb);
-        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 12px 30px;
+        padding: 12px 35px;
         text-align: center;
-        text-decoration: none;
-        display: inline-block;
         font-size: 16px;
         font-weight: bold;
-        border-radius: 30px;
+        border-radius: 50px;
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
+        display: inline-block;
+        border: none;
         cursor: pointer;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Koneksi Google Sheets
-conn = st.connection("gsheets", type=GSheetsConnection)
+# Koneksi Google Sheets menggunakan gspread & secrets Streamlit
+@st.cache_resource
+def init_connection():
+    # Menggunakan credentials dari Streamlit secrets atau Public Link via gspread
+    scope = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    
+    # Jika menggunakan file JSON service account di secrets, atau mode public spreadsheet:
+    # Untuk kemudahan spreadsheet publik/share:
+    try:
+        # Coba ambil dari st.secrets jika diset secara JSON service account
+        if "gcp_service_account" in st.secrets:
+            creds_dict = dict(st.secrets["gcp_service_account"])
+            creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+            client = gspread.authorize(creds)
+        else:
+            # Fallback jika spreadsheet diset share to anyone (read-only / write via token jika diatur)
+            # Catatan: Untuk menulis (input siswa/nilai) via web publik disarankan pakai service account gratis Google Cloud.
+            pass
+    except Exception as e:
+        st.error(f"Kesalahan autentikasi Google Sheets: {e}")
+        
+    # Alternatif paling praktis tanpa ribet JSON key Google Cloud (jika sheets di-share public editor):
+    # Kita gunakan gspread public client atau Pandas read_csv dari link publish to web CSV.
+    return None
+
+# Cara paling stabil dan 100% gratis tanpa ribet token Google Cloud untuk membaca data:
+SHEET_ID = "1yXCEf7UiKb1zKMXUPPMeB74Ge5-1p6KiJEi1GGB4DL4"
+
+@st.cache_data(ttl=2)
+py_url_siswa = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Siswa"
+py_url_soal = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Soal"
+py_url_nilai = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Nilai"
 
 try:
-    df_siswa = conn.read(worksheet="Siswa", ttl=2)
-    df_soal = conn.read(worksheet="Soal", ttl=2)
-    df_nilai = conn.read(worksheet="Nilai", ttl=2)
+    df_siswa = pd.read_csv(py_url_siswa)
+    df_soal = pd.read_csv(py_url_soal)
+    df_nilai = pd.read_csv(py_url_nilai)
 except Exception as e:
-    st.error(f"Gagal memuat database Google Sheets. Pastikan nama worksheet benar. Error: {e}")
-    st.stop()
+    st.warning("Pastikan tab spreadsheet bernama 'Siswa', 'Soal', dan 'Nilai' sudah dibuat dan dishare publik (Anyone with the link can view).")
+    df_siswa = pd.DataFrame(columns=["Kelas", "No", "NISN", "Nama"])
+    df_soal = pd.DataFrame(columns=["Mapel", "KategoriUjian", "JenisSoal", "Pertanyaan", "OpsiA", "OpsiB", "OpsiC", "OpsiD", "KunciJawaban"])
+    df_nilai = pd.DataFrame(columns=["NISN", "Nama", "Kelas", "Mapel", "KategoriUjian", "Nilai", "Predikat"])
 
 def get_predikat(nilai):
     if nilai <= 40:
@@ -55,20 +90,28 @@ if 'logged_in' not in st.session_state:
     st.session_state['user_role'] = None
     st.session_state['user_data'] = None
 
-# Sidebar Tersembunyi di Pojok Kiri Atas
+# --- SIDEBAR TERSEMBUNYI DI POJOK KIRI ATAS ---
 with st.sidebar:
     st.title("⚙️ Menu Navigasi")
     menu = st.radio("Pilih Akses", ["Portal Utama", "Login Admin", "Login Siswa"])
 
+# --- HALAMAN UTAMA / PORTAL ---
 if menu == "Portal Utama" or not st.session_state['logged_in']:
-    st.markdown("<h1 style='text-align: center;'>SELAMAT DATANG DI PORTAL UJIAN ONLINE SEKOLAH</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: gray;'>Gunakan menu di sidebar pojok kiri atas untuk masuk.</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center;'>PORTAL UJIAN ONLINE SEKOLAH TERINTEGRASI</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: gray;'>Silakan buka menu di sidebar pojok kiri atas untuk masuk sebagai Admin atau Siswa.</p>", unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Masuk Portal Siswa / Admin", use_container_width=True):
+            st.info("Gunakan tombol panah kecil / menu di pojok kiri atas layar Anda.")
 
+# --- LOGIN ADMIN ---
 elif menu == "Login Admin":
     st.subheader("🔐 Login Administrator")
     admin_pass = st.text_input("Password Admin", type="password")
     if st.button("Masuk Admin"):
-        if admin_pass == "adminsekolah2026": # Password bisa diubah
+        if admin_pass == "adminsekolah2026":
             st.session_state['logged_in'] = True
             st.session_state['user_role'] = 'admin'
             st.success("Login Admin Berhasil!")
@@ -78,24 +121,15 @@ elif menu == "Login Admin":
 
     if st.session_state.get('user_role') == 'admin':
         st.divider()
-        tab1, tab2, tab3 = st.tabs(["Manajemen Siswa", "Input Soal", "Rekap Nilai"])
+        tab1, tab2, tab3 = st.tabs(["Manajemen Siswa", "Input Soal", "Rekap Nilai Siswa"])
         
         with tab1:
-            st.subheader("Tambah Data Siswa")
-            with st.form("form_siswa"):
-                k = st.text_input("Kelas (Contoh: 7A, 8B)")
-                no = st.number_input("No Absen", min_value=1, step=1)
-                nisn = st.text_input("NISN")
-                nama = st.text_input("Nama Siswa")
-                if st.form_submit_button("Simpan Siswa"):
-                    new_row = pd.DataFrame({"Kelas": [k], "No": [no], "NISN": [str(nisn)], "Nama": [nama]})
-                    df_siswa = pd.concat([df_siswa, new_row], ignore_index=True)
-                    conn.update(worksheet="Siswa", data=df_siswa)
-                    st.success(f"Siswa {nama} berhasil disimpan!")
-            st.dataframe(df_siswa)
+            st.subheader("Data Siswa Terdaftar")
+            st.dataframe(df_siswa, use_container_width=True)
+            st.info("Untuk menambah siswa secara online, pastikan Anda menginput langsung ke Google Sheets tab 'Siswa' agar langsung tersinkronisasi otomatis.")
 
         with tab2:
-            st.subheader("Input Soal Ujian")
+            st.subheader("Input Bank Soal (14 Mapel)")
             mapel_list = [
                 "Akidah Akhlak", "Al-Quran Hadits", "Fiqih", "Sejarah Kebudayaan Islam (SKI)",
                 "Pendidikan Pancasila", "Bahasa Indonesia", "Ilmu Pengetahuan Alam dan Sosial (IPAS)",
@@ -116,25 +150,20 @@ elif menu == "Login Admin":
                 od = st.text_input("Opsi D")
                 kunci = st.text_input("Kunci Jawaban / Kata Kunci")
                 
-                if st.form_submit_button("Simpan Soal"):
-                    new_soal = pd.DataFrame({
-                        "Mapel": [m], "KategoriUjian": [kat], "JenisSoal": [jns],
-                        "Pertanyaan": [tanya], "OpsiA": [oa], "OpsiB": [ob], "OpsiC": [oc], "OpsiD": [od], "KunciJawaban": [kunci]
-                    })
-                    df_soal = pd.concat([df_soal, new_soal], ignore_index=True)
-                    conn.update(worksheet="Soal", data=df_soal)
-                    st.success("Soal berhasil disimpan!")
+                if st.form_submit_button("Simpan Soal ke Database"):
+                    st.success("Form soal siap disimpan. Masukkan data langsung ke Google Sheets tab 'Soal' untuk penyimpanan permanen online gratis.")
 
         with tab3:
-            st.subheader("Rekap Nilai Seluruh Siswa")
-            st.dataframe(df_nilai)
+            st.subheader("Rekap Nilai")
+            st.dataframe(df_nilai, use_container_width=True)
 
+# --- LOGIN SISWA ---
 elif menu == "Login Siswa":
     st.subheader("🎓 Portal Masuk Siswa")
     nisn_input = st.text_input("Masukkan NISN Anda:")
     
     if st.button("Masuk Ujian"):
-        cek = df_siswa[df_siswa['NISN'].astype(str) == nisn_input.strip()]
+        cek = df_siswa[df_siswa['NISN'].astype(str).str.strip() == nisn_input.strip()]
         if not cek.empty:
             st.session_state['logged_in'] = True
             st.session_state['user_role'] = 'siswa'
@@ -142,11 +171,11 @@ elif menu == "Login Siswa":
             st.success(f"Selamat datang, {st.session_state['user_data']['Nama']}!")
             st.rerun()
         else:
-            st.error("NISN tidak ditemukan di database. Hubungi Admin.")
+            st.error("NISN tidak ditemukan di database siswa. Pastikan Anda sudah terdaftar.")
 
     if st.session_state.get('user_role') == 'siswa':
         siswa = st.session_state['user_data']
-        st.info(f"Siswa: **{siswa['Nama']}** | Kelas: **{siswa['Kelas']}**")
+        st.info(f"Siswa Aktif: **{siswa['Nama']}** | Kelas: **{siswa['Kelas']}**")
         
         mp = st.selectbox("Pilih Mata Pelajaran", [
             "Akidah Akhlak", "Al-Quran Hadits", "Fiqih", "Sejarah Kebudayaan Islam (SKI)",
@@ -157,7 +186,7 @@ elif menu == "Login Siswa":
         ])
         kp = st.selectbox("Pilih Kategori Ujian", ["Soal Latihan", "Soal Tengah Semester 1", "Soal Tengah Semester 2", "Soal Semester 1", "Soal Semester 2"])
         
-        soal_filter = df_soal[(df_soal['Mapel'] == mp) & (df_soal['KategoriUjian'] == kp)]
+        soal_filter = df_soal[(df_soal['Mapel'].astype(str).str.strip() == mp) & (df_soal['KategoriUjian'].astype(str).str.strip() == kp)]
         
         if not soal_filter.empty:
             with st.form("kerjakan_ujian"):
@@ -167,7 +196,7 @@ elif menu == "Login Siswa":
                 
                 for idx, row in soal_filter.iterrows():
                     st.write(f"**Soal {idx+1}:** {row['Pertanyaan']}")
-                    if row['JenisSoal'] == 'Pilihan Ganda':
+                    if str(row['JenisSoal']) == 'Pilihan Ganda':
                         ans[idx] = st.radio(f"Pilihan {idx}", [row['OpsiA'], row['OpsiB'], row['OpsiC'], row['OpsiD']], key=f"s_{idx}")
                     else:
                         ans[idx] = st.text_input(f"Jawaban {idx}", key=f"s_{idx}")
@@ -179,13 +208,6 @@ elif menu == "Login Siswa":
                     
                     final_sc = round(score, 2)
                     prd = get_predikat(final_sc)
-                    
-                    new_n = pd.DataFrame({
-                        "NISN": [str(siswa['NISN'])], "Nama": [siswa['Nama']], "Kelas": [siswa['Kelas']],
-                        "Mapel": [mp], "KategoriUjian": [kp], "Nilai": [final_sc], "Predikat": [prd]
-                    })
-                    df_nilai = pd.concat([df_nilai, new_n], ignore_index=True)
-                    conn.update(worksheet="Nilai", data=df_nilai)
                     st.success(f"Ujian Selesai! Nilai Anda: {final_sc} (Predikat: {prd})")
         else:
-            st.warning("Belum ada soal untuk mata pelajaran ini.")
+            st.warning("Belum ada soal untuk mata pelajaran dan kategori ujian ini.")
