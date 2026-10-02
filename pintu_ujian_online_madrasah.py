@@ -17,7 +17,7 @@ st.set_page_config(
 # Auto refresh untuk pemantauan online & jam real-time (tiap 10 detik)
 st_autorefresh(interval=10000, key="datarefresh")
 
-# --- CUSTOM CSS: Perbaikan Proporsi Bingkai & Layout Terpusat ---
+# --- CUSTOM CSS: Perbaikan Warna Label & Teks Input ---
 st.markdown(
     """
     <style>
@@ -32,6 +32,13 @@ st.markdown(
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
+    /* Perbaikan agar seluruh label input Streamlit berwarna putih dan jelas */
+    .stTextInput label, .stSelectbox label, .stTextArea label {
+        color: #f8fafc !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+    }
+
     /* Sidebar Tertutup Default di Pojok Kiri Atas */
     [data-testid="stSidebar"] {
         background-color: #0d131f;
