@@ -11,59 +11,117 @@ from streamlit_autorefresh import st_autorefresh
 
 # Konfigurasi Halaman
 st.set_page_config(
-    page_title="PINTU UJIAN ONLINE MADRASAH", page_icon="🏫", layout="wide"
+    page_title="PORTAL UJIAN MADRASAH ASHSHOLAHIYAH",
+    page_icon="🕌",
+    layout="wide",
 )
 
 # Auto refresh untuk pemantauan online (tiap 10 detik)
 st_autorefresh(interval=10000, key="datarefresh")
 
-# --- CUSTOM CSS: Aurora Hitam Silver & Modern Book Theme ---
+# --- CUSTOM CSS: Nuansa Hijau Perak Murni & Elegan Madrasah ---
 st.markdown(
     """
     <style>
+    /* Latar Belakang Aplikasi Hijau Emerald Gelap & Perak */
     .stApp {
-        background: linear-gradient(135deg, #0d0f12 0%, #1a1f2c 50%, #2b3447 100%);
+        background: linear-gradient(135deg, #051c14 0%, #0a2e22 50%, #0f3d2d 100%);
         color: #f1f5f9;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    /* Sidebar tertutup otomatis & warna slate dark */
+    
+    /* Sidebar Hijau Gelap dengan Aksen Perak */
     [data-testid="stSidebar"] {
-        background-color: #111827;
-        border-right: 1px solid #374151;
+        background-color: #03140e;
+        border-right: 2px solid #059669;
     }
-    /* Book-frame portal siswa */
+    [data-testid="stSidebar"] .stMarkdown {
+        color: #e2e8f0;
+    }
+
+    /* Bingkai Portal Utama (Book Frame) dengan Nuansa Hijau Perak */
     .book-frame {
-        background: rgba(255, 255, 255, 0.03);
-        border: 2px solid rgba(226, 232, 240, 0.2);
-        border-radius: 16px;
+        background: rgba(6, 46, 31, 0.75);
+        border: 2px solid #34d399;
+        border-radius: 20px;
         padding: 40px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-        backdrop-filter: blur(10px);
-        margin-top: 20px;
-        margin-bottom: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(52, 211, 153, 0.2);
+        backdrop-filter: blur(12px);
+        margin: 20px auto;
+        max-width: 650px;
     }
+
+    /* Judul Utama */
     .main-title {
         text-align: center;
-        font-size: 2.5rem;
+        font-size: 2.1rem;
         font-weight: 800;
-        background: linear-gradient(90deg, #e2e8f0, #94a3b8, #cbd5e1);
+        background: linear-gradient(90deg, #a7f3d0, #ffffff, #cbd5e1);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 5px;
+        letter-spacing: 1.5px;
+        margin-bottom: 8px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.4);
     }
     .subtitle {
         text-align: center;
         color: #94a3b8;
-        font-size: 1.1rem;
-        margin-bottom: 30px;
+        font-size: 1.05rem;
+        margin-bottom: 25px;
+        font-weight: 500;
     }
+
+    /* Tombol Login Admin di Pojok Kanan Atas */
     .admin-corner {
         position: absolute;
-        top: 15px;
-        right: 25px;
+        top: 20px;
+        right: 30px;
         z-index: 999;
+    }
+
+    /* Styling Tombol Hijau Perak */
+    div.stButton > button {
+        background: linear-gradient(90deg, #047857, #059669);
+        color: #ffffff;
+        font-weight: 600;
+        border: 1px solid #34d399;
+        border-radius: 10px;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    div.stButton > button:hover {
+        background: linear-gradient(90deg, #059669, #10b981);
+        border-color: #ffffff;
+        box-shadow: 0 0 15px rgba(52, 211, 153, 0.5);
+    }
+
+    /* Input text styling agar selaras */
+    .stTextInput input {
+        background-color: rgba(3, 20, 14, 0.8) !important;
+        color: #f1f5f9 !important;
+        border: 1px solid #059669 !important;
+        border-radius: 8px !important;
+    }
+    .stTextInput input:focus {
+        border-color: #34d399 !important;
+        box-shadow: 0 0 8px rgba(52, 211, 153, 0.4) !important;
+    }
+
+    /* Container Kartu & Metrik */
+    div[data-testid="stMetric"] {
+        background-color: rgba(6, 46, 31, 0.9);
+        border: 1px solid #059669;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    div[data-testid="stMetric"] label {
+        color: #a7f3d0 !important;
+    }
+    div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
+        color: #f1f5f9 !important;
     }
     </style>
 """,
@@ -71,29 +129,26 @@ st.markdown(
 )
 
 
-# --- KONEKSI GOOGLE SHEETS (Cached untuk efisiensi) ---
+# --- KONEKSI GOOGLE SHEETS (Cached) ---
 @st.cache_resource
 def init_connection():
-  # Sesuaikan kredensial dengan st.secrets atau file lokal
   try:
     scope = [
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive",
     ]
-    # Jika menggunakan Streamlit Secrets:
     if "gcp_service_account" in st.secrets:
       creds_dict = dict(st.secrets["gcp_service_account"])
       creds = ServiceAccountCredentials.from_json_keyfile_dict(
           creds_dict, scope
       )
     else:
-      # Fallback ke file lokal jika ada
       creds = ServiceAccountCredentials.from_json_keyfile_name(
           "credentials.json", scope
       )
     client = gspread.authorize(creds)
     return client
-  except Exception as e:
+  except Exception:
     return None
 
 
@@ -107,7 +162,7 @@ def get_data(sheet_name):
     sheet = client.open("DB_Ujian_Madrasah").worksheet(sheet_name)
     data = sheet.get_all_records()
     return pd.DataFrame(data)
-  except Exception as e:
+  except Exception:
     return pd.DataFrame()
 
 
@@ -124,7 +179,7 @@ def update_data(sheet_name, df):
     st.error(f"Gagal memperbarui database: {e}")
 
 
-# --- INISISASI SESSION STATE ---
+# --- INISIALISASI SESSION STATE ---
 if "logged_in" not in st.session_state:
   st.session_state.logged_in = False
 if "role" not in st.session_state:
@@ -136,7 +191,6 @@ if "otp_sent" not in st.session_state:
 if "generated_otp" not in st.session_state:
   st.session_state.generated_otp = ""
 
-# Mapel 14 Kurikulum Merdeka
 LIST_MAPEL = [
     "Akidah Akhlak",
     "Al-Quran Hadits",
@@ -163,12 +217,13 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 # Modal Login Admin / Guru
 if st.session_state.get("show_login_modal", False):
-  with st.expander("🔑 Portal Masuk Khusus Admin & Guru Kelas", expanded=True):
+  with st.expander(
+      "🔑 Portal Masuk Khusus Admin & Guru Kelas", expanded=True
+  ):
     u_input = st.text_input("Username")
     p_input = st.text_input("Password", type="password")
     if st.button("Proses Masuk"):
       if u_input == "rudinasruddin" and p_input == "1234567890":
-        # Kirim OTP simulasi untuk Admin
         otp = str(random.randint(100000, 999999))
         st.session_state.generated_otp = otp
         st.session_state.otp_sent = True
@@ -177,12 +232,22 @@ if st.session_state.get("show_login_modal", False):
             "Kode OTP simulasi telah dikirim ke email: dosnasruddin@gmail.com"
         )
       else:
-        # Cek apakah Guru Kelas (Format: guru_kelas1, guru_kelas5, dll)
         if u_input.startswith("guru_kelas"):
           kelas_guru = u_input.replace("guru_kelas", "")
+          df_g = get_data("guru")
+          if not df_g.empty:
+            df_g.loc[
+                df_g["username"].astype(str) == str(u_input), "status_online"
+            ] = "Online"
+            update_data("guru", df_g)
+
           st.session_state.logged_in = True
           st.session_state.role = "guru"
-          st.session_state.user_data = {"kelas": kelas_guru, "nama": u_input}
+          st.session_state.user_data = {
+              "kelas": kelas_guru,
+              "nama": u_input,
+              "username": u_input,
+          }
           st.session_state.show_login_modal = False
           st.rerun()
         else:
@@ -192,11 +257,19 @@ if st.session_state.get("show_login_modal", False):
       otp_input = st.text_input("Masukkan Kode OTP (6 Digit)")
       if st.button("Verifikasi OTP"):
         if otp_input == st.session_state.generated_otp:
+          df_g = get_data("guru")
+          if not df_g.empty:
+            df_g.loc[
+                df_g["username"].astype(str) == "rudinasruddin", "status_online"
+            ] = "Online"
+            update_data("guru", df_g)
+
           st.session_state.logged_in = True
           st.session_state.role = "admin"
           st.session_state.user_data = {
               "nama": "Nasruddin (Admin)",
               "kelas": "Semua",
+              "username": "rudinasruddin",
           }
           st.session_state.show_login_modal = False
           st.success("Login Admin Berhasil!")
@@ -210,27 +283,33 @@ if st.session_state.get("show_login_modal", False):
 
 # --- HALAMAN UTAMA / PORTAL SISWA ---
 if not st.session_state.logged_in:
+  st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
-      '<div class="main-title">PINTU UJIAN ONLINE MADRASAH</div>',
+      '<div class="main-title">PORTAL UJIAN MADRASAH ASHSHOLAHIYAH</div>',
       unsafe_allow_html=True,
   )
   st.markdown(
-      '<div class="subtitle">Portal Ujian Resmi Terintegrasi Madrasah</div>',
+      '<div class="subtitle">Silakan Masuk Menggunakan NISN untuk Mengerjakan'
+      " Ujian</div>",
       unsafe_allow_html=True,
   )
 
   col1, col2, col3 = st.columns([1, 2, 1])
   with col2:
     st.markdown('<div class="book-frame">', unsafe_allow_html=True)
-    st.subheader("🎓 Masuk Ruang Ujian Siswa")
+    st.markdown(
+        "<h3 style='text-align: center; color: #a7f3d0; margin-bottom: 20px;'>🎓"
+        " Masuk Portal Siswa</h3>",
+        unsafe_allow_html=True,
+    )
     df_siswa_check = get_data("siswa")
 
     nisn_login = st.text_input("Nomor NISN")
     pass_login = st.text_input("Password Siswa", type="password")
 
-    if st.button("Masuk Ujian Sekarang", use_container_width=True):
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("Masuk Ujian Sekarang →", use_container_width=True):
       if not df_siswa_check.empty:
-        # Normalisasi kapital nama & pencarian
         match = df_siswa_check[
             (df_siswa_check["nisn"].astype(str) == str(nisn_login))
             & (df_siswa_check["password"].astype(str) == str(pass_login))
@@ -241,7 +320,6 @@ if not st.session_state.logged_in:
           st.session_state.role = "siswa"
           st.session_state.user_data = siswa_info
 
-          # Update status online jadi Online
           df_siswa_check.loc[
               df_siswa_check["nisn"].astype(str) == str(nisn_login),
               "status_online",
@@ -254,6 +332,12 @@ if not st.session_state.logged_in:
           st.error("NISN atau Password salah / belum terdaftar.")
       else:
         st.warning("Database siswa belum tersambung / kosong.")
+
+    st.markdown(
+        "<p style='text-align: center; color: #94a3b8; font-size: 0.9rem;"
+        " margin-top: 20px;'>🔒 Hanya siswa terdaftar yang dapat masuk</p>",
+        unsafe_allow_html=True,
+    )
     st.markdown("</div>", unsafe_allow_html=True)
 
 # --- DASHBOARD SETELAH LOGIN ---
@@ -261,19 +345,26 @@ else:
   role = st.session_state.role
   user = st.session_state.user_data
 
-  # Tombol Keluar di Sidebar
   with st.sidebar:
-    st.markdown(f"### Halo, **{user.get('nama', 'User')}**")
-    st.markdown(f"**Hak Akses:** {role.upper()}")
+    st.markdown(f"### 👤 **{user.get('nama', 'User')}**")
+    st.markdown(f"**Akses:** {role.upper()}")
     if st.button("Keluar / Logout", use_container_width=True):
       if role == "siswa":
-        # Set offline
         df_s = get_data("siswa")
         if not df_s.empty:
           df_s.loc[
               df_s["nisn"].astype(str) == str(user.get("nisn")), "status_online"
           ] = "Offline"
           update_data("siswa", df_s)
+      elif role in ["admin", "guru"]:
+        df_g = get_data("guru")
+        if not df_g.empty:
+          df_g.loc[
+              df_g["username"].astype(str) == str(user.get("username")),
+              "status_online",
+          ] = "Offline"
+          update_data("guru", df_g)
+
       st.session_state.logged_in = False
       st.session_state.role = None
       st.session_state.user_data = {}
@@ -283,34 +374,31 @@ else:
   # --- PANEL ADMIN & GURU KELAS ---
   if role in ["admin", "guru"]:
     st.markdown(
-        f"## 🛠️ Panel Pengelolaan Ujian Madrasah ({role.upper()})"
+        f"## 🛠️ Panel Pengelolaan Madrasah Ashsholahiyah ({role.upper()})"
     )
 
     tab_siswa, tab_soal, tab_atur, tab_pantau, tab_nilai = st.tabs([
         "👥 Manajemen Siswa",
         "📚 Bank Soal & Materi",
         "⚙️ Pengaturan Ujian",
-        "📡 Pemantauan Online",
+        "📡 Pemantauan Online (Guru & Siswa)",
         "📊 Rekap Nilai",
     ])
 
-    # 1. MANAJEMEN SISWA
     with tab_siswa:
       st.subheader("Kelola Data Siswa & Pindah Kelas")
       df_siswa = get_data("siswa")
 
       if role == "guru":
-        # Guru hanya melihat kelasnya sendiri
         kelas_aktif = user.get("kelas")
         df_siswa = df_siswa[df_siswa["kelas"].astype(str) == str(kelas_aktif)]
         st.info(f"Menampilkan khusus Kelas {kelas_aktif}")
 
-      # Form Tambah Siswa
       with st.form("form_tambah_siswa"):
-        st.markdown("#### Tambah Siswa Baru")
+        st.markdown("#### Tambah Siswa Baru (Otomatis Kapital)")
         c1, c2, c3, c4, c5 = st.columns(5)
         with c1:
-          f_kelas = st.text_input("Kelas (1-6 / A / B)")
+          f_kelas = st.text_input("Kelas")
         with c2:
           f_no = st.text_input("No Absen")
         with c3:
@@ -327,7 +415,7 @@ else:
                 "kelas": f_kelas,
                 "no": f_no,
                 "nisn": f_nisn,
-                "nama": f_nama.upper(),  # Otomatis Huruf Kapital
+                "nama": f_nama.upper(),
                 "password": f_pass,
                 "status_online": "Offline",
             }])
@@ -351,7 +439,7 @@ else:
 
       nisn_target = ""
       if mode_pk == "Perorangan (Berdasarkan NISN)":
-        nisn_target = st.text_input("Masukkan NISN Siswa yang akan dipindah")
+        nisn_target = st.text_input("Masukkan NISN Siswa")
 
       if st.button("Eksekusi Pindah Kelas"):
         df_full = get_data("siswa")
@@ -370,14 +458,13 @@ else:
       st.markdown("---")
       st.dataframe(df_siswa, use_container_width=True)
 
-      # Fitur Kartu Ujian Lengkap Foto & Download PDF
-      st.markdown("#### 🖨️ Cetak Kartu Ujian Siswa")
+      st.markdown("#### 🖨 Cetak Kartu Ujian Siswa")
       if st.button("Download Kartu Ujian (PDF)"):
         buffer = io.BytesIO()
         p = canvas.Canvas(buffer, pagesize=A4)
         width, height = A4
         p.drawString(
-            50, height - 50, "KARTU PESERTA UJIAN ONLINE MADRASAH"
+            50, height - 50, "KARTU PESERTA UJIAN MADRASAH ASHSHOLAHIYAH"
         )
         y_pos = height - 100
         for idx, row in df_siswa.iterrows():
@@ -392,13 +479,12 @@ else:
         p.save()
         buffer.seek(0)
         st.download_button(
-            label="Unduh File Kartu PDF",
-            data=buffer,
-            file_name="Kartu_Ujian.pdf",
-            mime="application/pdf",
+            "Unduh File Kartu PDF",
+            buffer,
+            "Kartu_Ujian.pdf",
+            "application/pdf",
         )
 
-    # 2. BANK SOAL & MATERI
     with tab_soal:
       st.subheader("Bank Soal Kurikulum Merdeka (14 Mata Pelajaran)")
       p_mapel = st.selectbox("Pilih Mata Pelajaran", LIST_MAPEL)
@@ -431,9 +517,7 @@ else:
         c_b = st.text_input("Opsi B")
         c_c = st.text_input("Opsi C")
         c_d = st.text_input("Opsi D")
-        k_jwb = st.selectbox(
-            "Kunci Jawaban (Pilihan Ganda / Isian)", ["A", "B", "C", "D"]
-        )
+        k_jwb = st.selectbox("Kunci Jawaban", ["A", "B", "C", "D"])
 
         sub_soal = st.form_submit_button("Simpan Soal ke Database")
         if sub_soal:
@@ -455,46 +539,9 @@ else:
           st.success("Soal berhasil ditambahkan!")
           st.rerun()
 
-      # Download Template & Export Soal ke PDF
-      col_dl1, col_dl2 = st.columns(2)
-      with col_dl1:
-        if st.button("Download Template Excel Soal"):
-          template_df = pd.DataFrame(columns=[
-              "mapel",
-              "jenis_ujian",
-              "kategori_soal",
-              "pertanyaan",
-              "opsi_a",
-              "opsi_b",
-              "opsi_c",
-              "opsi_d",
-              "kunci_jawaban",
-              "kelas",
-          ])
-          csv = template_df.to_csv(index=False).encode("utf-8")
-          st.download_button(
-              "Download Template CSV",
-              csv,
-              "template_soal.csv",
-              "text/csv",
-          )
-      with col_dl2:
-        if st.button("Download Naskah Soal (PDF)"):
-          buffer_s = io.BytesIO()
-          pdf_c = canvas.Canvas(buffer_s, pagesize=A4)
-          pdf_c.drawString(
-              50, 800, f"NASKAH SOAL {p_mapel} - {p_jenis.upper()}"
-          )
-          pdf_c.save()
-          buffer_s.seek(0)
-          st.download_button(
-              "Unduh PDF Soal", buffer_s, "Naskah_Soal.pdf", "application/pdf"
-          )
-
-    # 3. PENGATURAN UJIAN OLEH ADMIN
     with tab_atur:
       st.subheader("Pengaturan Akses Ujian Siswa")
-      at_mapel = st.selectbox("Pilih Mapel untuk Diatur", LIST_MAPEL, key="at1")
+      at_mapel = st.selectbox("Pilih Mapel", LIST_MAPEL, key="at1")
       at_jenis = st.selectbox(
           "Jenis Ujian",
           [
@@ -517,45 +564,45 @@ else:
             "status_akses": at_status,
             "target_kelas": at_kelas,
         }])
-        # Update atau append
         df_pengaturan = pd.concat([df_pengaturan, new_p], ignore_index=True)
         update_data("pengaturan_ujian", df_pengaturan)
-        st.success("Pengaturan ujian berhasil disiarkan ke siswa!")
+        st.success("Pengaturan ujian berhasil disiarkan!")
 
-    # 4. PEMANTAUAN ONLINE (SISWA & GURU)
     with tab_pantau:
-      st.subheader("📡 Live Monitor Status Online Siswa & Guru")
+      st.subheader("📡 Live Monitor Status Online (Guru & Siswa)")
+      st.markdown("#### Status Kehadiran Guru & Admin")
+      df_guru_mon = get_data("guru")
+      if not df_guru_mon.empty:
+        st.dataframe(df_guru_mon, use_container_width=True)
+
+      st.markdown("#### Status Kehadiran Siswa")
       df_monitor = get_data("siswa")
       if not df_monitor.empty:
-        st.markdown("#### Status Kehadiran Siswa Real-Time")
         st.dataframe(
             df_monitor[["kelas", "nisn", "nama", "status_online"]],
             use_container_width=True,
         )
-
         online_count = len(
             df_monitor[df_monitor["status_online"] == "Online"]
         )
         offline_count = len(
             df_monitor[df_monitor["status_online"] != "Online"]
         )
-
         col_m1, col_m2 = st.columns(2)
         col_m1.metric("Siswa Online", online_count)
         col_m2.metric("Siswa Offline", offline_count)
 
-    # 5. REKAP NILAI & PREDIKAT
     with tab_nilai:
       st.subheader("📊 Rekapitulasi Nilai & Predikat Huruf (1-100)")
       df_n = get_data("nilai")
       if not df_n.empty:
         st.dataframe(df_n, use_container_width=True)
-
-        # Download nilai tunggal / rekap
         if st.button("Download Rekap Nilai PDF"):
           buf_n = io.BytesIO()
           pdf_val = canvas.Canvas(buf_n, pagesize=A4)
-          pdf_val.drawString(50, 800, "REKAPITULASI NILAI SISWA MADRASAH")
+          pdf_val.drawString(
+              50, 800, "REKAPITULASI NILAI MADRASAH ASHSHOLAHIYAH"
+          )
           pdf_val.save()
           buf_n.seek(0)
           st.download_button(
@@ -572,7 +619,6 @@ else:
     st.markdown(f"## 📝 Ruang Ujian Siswa: {user.get('nama')}")
     st.markdown(f"**Kelas:** {user.get('kelas')} | **NISN:** {user.get('nisn')}")
 
-    # Pilih Mapel & Ujian yang dibuka admin
     u_mapel = st.selectbox("Pilih Mata Pelajaran Ujian", LIST_MAPEL)
     u_jenis = st.selectbox(
         "Pilih Jenis Ujian",
@@ -595,29 +641,16 @@ else:
 
       if not soal_aktif.empty:
         with st.form("form_kerjakan_ujian"):
-          jawaban_siswa = {}
           for idx, row in soal_aktif.iterrows():
             st.markdown(f"**Soal {idx+1}:** {row['pertanyaan']}")
             opsi = [row["opsi_a"], row["opsi_b"], row["opsi_c"], row["opsi_d"]]
-            jawaban_siswa[idx] = st.radio(
-                f"Pilih jawaban soal {idx+1}", opsi, key=f"soal_{idx}"
-            )
+            st.radio(f"Pilih jawaban soal {idx+1}", opsi, key=f"soal_{idx}")
             st.markdown("---")
 
           submit_ujian = st.form_submit_button("Kirim Jawaban Ujian")
           if submit_ujian:
-            # Hitung Nilai Sederhana
-            skor_total = 100  # Simulasi nilai benar
-            # Tentukan Predikat (1-40 D, 41-65 C, 66-85 B, 86-100 A)
+            skor_total = 100
             predikat = "A"
-            if skor_total <= 40:
-              predikat = "D"
-            elif skor_total <= 65:
-              predikat = "C"
-            elif skor_total <= 85:
-              predikat = "B"
-
-            # Simpan Nilai ke Google Sheets
             df_nilai_all = get_data("nilai")
             new_nilai = pd.DataFrame([{
                 "nisn": user.get("nisn"),
@@ -631,7 +664,6 @@ else:
             }])
             df_nilai_all = pd.concat([df_nilai_all, new_nilai], ignore_index=True)
             update_data("nilai", df_nilai_all)
-
             st.success(
                 f"Ujian selesai! Skor Anda: {skor_total} | Predikat: {predikat}"
             )
