@@ -74,17 +74,20 @@ st.markdown(
 # --- KONEKSI GOOGLE SHEETS (Cached untuk efisiensi) ---
 @st.cache_resource
 def init_connection():
+  # Sesuaikan kredensial dengan st.secrets atau file lokal
   try:
     scope = [
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive",
     ]
+    # Jika menggunakan Streamlit Secrets:
     if "gcp_service_account" in st.secrets:
       creds_dict = dict(st.secrets["gcp_service_account"])
       creds = ServiceAccountCredentials.from_json_keyfile_dict(
           creds_dict, scope
       )
     else:
+      # Fallback ke file lokal jika ada
       creds = ServiceAccountCredentials.from_json_keyfile_name(
           "credentials.json", scope
       )
@@ -165,6 +168,7 @@ if st.session_state.get("show_login_modal", False):
     p_input = st.text_input("Password", type="password")
     if st.button("Proses Masuk"):
       if u_input == "rudinasruddin" and p_input == "1234567890":
+        # Kirim OTP simulasi untuk Admin
         otp = str(random.randint(100000, 999999))
         st.session_state.generated_otp = otp
         st.session_state.otp_sent = True
@@ -173,33 +177,12 @@ if st.session_state.get("show_login_modal", False):
             "Kode OTP simulasi telah dikirim ke email: dosnasruddin@gmail.com"
         )
       else:
+        # Cek apakah Guru Kelas (Format: guru_kelas1, guru_kelas5, dll)
         if u_input.startswith("guru_kelas"):
           kelas_guru = u_input.replace("guru_kelas", "")
           st.session_state.logged_in = True
           st.session_state.role = "guru"
-          st.session_state.user_data = {
-              "kelas": kelas_guru,
-              "nama": f"Guru Kelas {kelas_guru}",
-              "username": u_input,
-          }
-
-          # Update status guru menjadi online di database 'guru'
-          df_g_check = get_data("guru")
-          if not df_g_check.empty:
-            if u_input in df_g_check["username"].values:
-              df_g_check.loc[
-                  df_g_check["username"] == u_input, "status_online"
-              ] = "Online"
-            else:
-              new_g_row = pd.DataFrame([{
-                  "username": u_input,
-                  "nama": f"Guru Kelas {kelas_guru}",
-                  "kelas": kelas_guru,
-                  "status_online": "Online",
-              }])
-              df_g_check = pd.concat([df_g_check, new_g_row], ignore_index=True)
-            update_data("guru", df_g_check)
-
+          st.session_state.user_data = {"kelas": kelas_guru, "nama": u_input}
           st.session_state.show_login_modal = False
           st.rerun()
         else:
@@ -214,26 +197,7 @@ if st.session_state.get("show_login_modal", False):
           st.session_state.user_data = {
               "nama": "Nasruddin (Admin)",
               "kelas": "Semua",
-              "username": "rudinasruddin",
           }
-
-          # Update status admin di database 'guru'
-          df_g_check = get_data("guru")
-          if not df_g_check.empty:
-            if "rudinasruddin" in df_g_check["username"].values:
-              df_g_check.loc[
-                  df_g_check["username"] == "rudinasruddin", "status_online"
-              ] = "Online"
-            else:
-              new_g_row = pd.DataFrame([{
-                  "username": "rudinasruddin",
-                  "nama": "Nasruddin (Admin)",
-                  "kelas": "Semua",
-                  "status_online": "Online",
-              }])
-              df_g_check = pd.concat([df_g_check, new_g_row], ignore_index=True)
-            update_data("guru", df_g_check)
-
           st.session_state.show_login_modal = False
           st.success("Login Admin Berhasil!")
           st.rerun()
@@ -266,6 +230,7 @@ if not st.session_state.logged_in:
 
     if st.button("Masuk Ujian Sekarang", use_container_width=True):
       if not df_siswa_check.empty:
+        # Normalisasi kapital nama & pencarian
         match = df_siswa_check[
             (df_siswa_check["nisn"].astype(str) == str(nisn_login))
             & (df_siswa_check["password"].astype(str) == str(pass_login))
@@ -276,6 +241,7 @@ if not st.session_state.logged_in:
           st.session_state.role = "siswa"
           st.session_state.user_data = siswa_info
 
+          # Update status online jadi Online
           df_siswa_check.loc[
               df_siswa_check["nisn"].astype(str) == str(nisn_login),
               "status_online",
@@ -301,19 +267,13 @@ else:
     st.markdown(f"**Hak Akses:** {role.upper()}")
     if st.button("Keluar / Logout", use_container_width=True):
       if role == "siswa":
+        # Set offline
         df_s = get_data("siswa")
         if not df_s.empty:
           df_s.loc[
               df_s["nisn"].astype(str) == str(user.get("nisn")), "status_online"
           ] = "Offline"
           update_data("siswa", df_s)
-      elif role in ["admin", "guru"]:
-        df_g = get_data("guru")
-        if not df_g.empty:
-          uname = user.get("username")
-          df_g.loc[df_g["username"] == uname, "status_online"] = "Offline"
-          update_data("guru", df_g)
-
       st.session_state.logged_in = False
       st.session_state.role = None
       st.session_state.user_data = {}
@@ -340,10 +300,12 @@ else:
       df_siswa = get_data("siswa")
 
       if role == "guru":
+        # Guru hanya melihat kelasnya sendiri
         kelas_aktif = user.get("kelas")
         df_siswa = df_siswa[df_siswa["kelas"].astype(str) == str(kelas_aktif)]
         st.info(f"Menampilkan khusus Kelas {kelas_aktif}")
 
+      # Form Tambah Siswa
       with st.form("form_tambah_siswa"):
         st.markdown("#### Tambah Siswa Baru")
         c1, c2, c3, c4, c5 = st.columns(5)
@@ -365,7 +327,7 @@ else:
                 "kelas": f_kelas,
                 "no": f_no,
                 "nisn": f_nisn,
-                "nama": f_nama.upper(),
+                "nama": f_nama.upper(),  # Otomatis Huruf Kapital
                 "password": f_pass,
                 "status_online": "Offline",
             }])
@@ -408,6 +370,7 @@ else:
       st.markdown("---")
       st.dataframe(df_siswa, use_container_width=True)
 
+      # Fitur Kartu Ujian Lengkap Foto & Download PDF
       st.markdown("#### 🖨️ Cetak Kartu Ujian Siswa")
       if st.button("Download Kartu Ujian (PDF)"):
         buffer = io.BytesIO()
@@ -492,6 +455,7 @@ else:
           st.success("Soal berhasil ditambahkan!")
           st.rerun()
 
+      # Download Template & Export Soal ke PDF
       col_dl1, col_dl2 = st.columns(2)
       with col_dl1:
         if st.button("Download Template Excel Soal"):
@@ -553,33 +517,17 @@ else:
             "status_akses": at_status,
             "target_kelas": at_kelas,
         }])
+        # Update atau append
         df_pengaturan = pd.concat([df_pengaturan, new_p], ignore_index=True)
         update_data("pengaturan_ujian", df_pengaturan)
         st.success("Pengaturan ujian berhasil disiarkan ke siswa!")
 
     # 4. PEMANTAUAN ONLINE (SISWA & GURU)
     with tab_pantau:
-      st.subheader(
-          "📡 Live Monitor Status Online Guru & Siswa Secara Langsung"
-      )
-
-      # Pantau Guru & Admin
-      st.markdown("#### 👨‍🏫 Status Kehadiran Guru & Admin")
-      df_guru_monitor = get_data("guru")
-      if not df_guru_monitor.empty:
-        st.dataframe(
-            df_guru_monitor[["nama", "kelas", "status_online"]],
-            use_container_width=True,
-        )
-      else:
-        st.info("Belum ada data login guru tercatat.")
-
-      st.markdown("---")
-
-      # Pantau Siswa
-      st.markdown("#### 👨‍🎓 Status Kehadiran Siswa")
+      st.subheader("📡 Live Monitor Status Online Siswa & Guru")
       df_monitor = get_data("siswa")
       if not df_monitor.empty:
+        st.markdown("#### Status Kehadiran Siswa Real-Time")
         st.dataframe(
             df_monitor[["kelas", "nisn", "nama", "status_online"]],
             use_container_width=True,
@@ -603,6 +551,7 @@ else:
       if not df_n.empty:
         st.dataframe(df_n, use_container_width=True)
 
+        # Download nilai tunggal / rekap
         if st.button("Download Rekap Nilai PDF"):
           buf_n = io.BytesIO()
           pdf_val = canvas.Canvas(buf_n, pagesize=A4)
@@ -623,6 +572,7 @@ else:
     st.markdown(f"## 📝 Ruang Ujian Siswa: {user.get('nama')}")
     st.markdown(f"**Kelas:** {user.get('kelas')} | **NISN:** {user.get('nisn')}")
 
+    # Pilih Mapel & Ujian yang dibuka admin
     u_mapel = st.selectbox("Pilih Mata Pelajaran Ujian", LIST_MAPEL)
     u_jenis = st.selectbox(
         "Pilih Jenis Ujian",
@@ -656,7 +606,9 @@ else:
 
           submit_ujian = st.form_submit_button("Kirim Jawaban Ujian")
           if submit_ujian:
-            skor_total = 100
+            # Hitung Nilai Sederhana
+            skor_total = 100  # Simulasi nilai benar
+            # Tentukan Predikat (1-40 D, 41-65 C, 66-85 B, 86-100 A)
             predikat = "A"
             if skor_total <= 40:
               predikat = "D"
@@ -665,6 +617,7 @@ else:
             elif skor_total <= 85:
               predikat = "B"
 
+            # Simpan Nilai ke Google Sheets
             df_nilai_all = get_data("nilai")
             new_nilai = pd.DataFrame([{
                 "nisn": user.get("nisn"),
