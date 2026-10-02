@@ -19,10 +19,16 @@ st.set_page_config(
 # Auto refresh untuk pemantauan online (tiap 10 detik)
 st_autorefresh(interval=10000, key="datarefresh")
 
-# --- CUSTOM CSS: Nuansa Hijau Perak Murni & Elegan Madrasah ---
+# --- CUSTOM CSS: Proporsional, Bingkai Buku Hijau Perak ---
 st.markdown(
     """
     <style>
+    /* Mengurangi jarak padding atas bawaan Streamlit agar lebih ke atas */
+    .block-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
+    }
+
     /* Latar Belakang Aplikasi Hijau Emerald Gelap & Perak */
     .stApp {
         background: linear-gradient(135deg, #051c14 0%, #0a2e22 50%, #0f3d2d 100%);
@@ -39,35 +45,35 @@ st.markdown(
         color: #e2e8f0;
     }
 
-    /* Bingkai Portal Utama (Book Frame) dengan Nuansa Hijau Perak */
+    /* Bingkai Portal Utama (Book Frame) - Memuat Judul dan Form Sekaligus */
     .book-frame {
-        background: rgba(6, 46, 31, 0.75);
+        background: rgba(4, 31, 21, 0.85);
         border: 2px solid #34d399;
         border-radius: 20px;
-        padding: 40px;
+        padding: 35px 40px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(52, 211, 153, 0.2);
         backdrop-filter: blur(12px);
-        margin: 20px auto;
-        max-width: 650px;
+        margin: 10px auto;
+        max-width: 680px;
     }
 
-    /* Judul Utama */
+    /* Judul Utama di dalam Bingkai */
     .main-title {
         text-align: center;
-        font-size: 2.1rem;
+        font-size: 1.8rem;
         font-weight: 800;
         background: linear-gradient(90deg, #a7f3d0, #ffffff, #cbd5e1);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-bottom: 8px;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
         text-shadow: 0 2px 4px rgba(0,0,0,0.4);
     }
     .subtitle {
         text-align: center;
         color: #94a3b8;
-        font-size: 1.05rem;
+        font-size: 0.95rem;
         margin-bottom: 25px;
         font-weight: 500;
     }
@@ -75,8 +81,8 @@ st.markdown(
     /* Tombol Login Admin di Pojok Kanan Atas */
     .admin-corner {
         position: absolute;
-        top: 20px;
-        right: 30px;
+        top: 15px;
+        right: 25px;
         z-index: 999;
     }
 
@@ -283,23 +289,23 @@ if st.session_state.get("show_login_modal", False):
 
 # --- HALAMAN UTAMA / PORTAL SISWA ---
 if not st.session_state.logged_in:
-  st.markdown("<br>", unsafe_allow_html=True)
-  st.markdown(
-      '<div class="main-title">PORTAL UJIAN MADRASAH ASHSHOLAHIYAH</div>',
-      unsafe_allow_html=True,
-  )
-  st.markdown(
-      '<div class="subtitle">Silakan Masuk Menggunakan NISN untuk Mengerjakan'
-      " Ujian</div>",
-      unsafe_allow_html=True,
-  )
-
-  col1, col2, col3 = st.columns([1, 2, 1])
+  col1, col2, col3 = st.columns([1, 3, 1])
   with col2:
+    # Membungkus judul dan form login siswa ke dalam satu bingkai buku modern yang proporsional
     st.markdown('<div class="book-frame">', unsafe_allow_html=True)
     st.markdown(
-        "<h3 style='text-align: center; color: #a7f3d0; margin-bottom: 20px;'>🎓"
-        " Masuk Portal Siswa</h3>",
+        '<div class="main-title">PORTAL UJIAN MADRASAH ASHSHOLAHIYAH</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="subtitle">Silakan Masuk Menggunakan NISN untuk Mengerjakan'
+        " Ujian</div>",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        "<h4 style='text-align: center; color: #a7f3d0; margin-bottom: 15px;'>🎓"
+        " Masuk Portal Siswa</h4>",
         unsafe_allow_html=True,
     )
     df_siswa_check = get_data("siswa")
@@ -334,8 +340,9 @@ if not st.session_state.logged_in:
         st.warning("Database siswa belum tersambung / kosong.")
 
     st.markdown(
-        "<p style='text-align: center; color: #94a3b8; font-size: 0.9rem;"
-        " margin-top: 20px;'>🔒 Hanya siswa terdaftar yang dapat masuk</p>",
+        "<p style='text-align: center; color: #94a3b8; font-size: 0.85rem;"
+        " margin-top: 15px; margin-bottom: 0;'>🔒 Hanya siswa terdaftar yang"
+        " dapat masuk</p>",
         unsafe_allow_html=True,
     )
     st.markdown("</div>", unsafe_allow_html=True)
